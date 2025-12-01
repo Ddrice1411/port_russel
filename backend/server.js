@@ -8,7 +8,7 @@ const jwt = require("jsonwebtoken");
 require("dotenv").config();
 
 // Import du modèle User
-const User = require("./models/User");
+const User = require('./models/User');
 
 // Import des autres routes
 const userRoutes = require("./routes/users.routes");
