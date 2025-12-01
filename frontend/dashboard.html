@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Tableau de bord - Port Russell</title>
+    <link rel="stylesheet" href="styles.css" />
+    <script defer src="main.js"></script>
+    <script>
+      async function initDashboard() {
+        requireAuth();
+
+        const user = getUser();
+        document.getElementById("user-info").textContent =
+          user.username + " (" + user.email + ")";
+
+        const today = new Date().toLocaleDateString("fr-FR");
+        document.getElementById("today").textContent = today;
+
+        // si la route /reservations/ongoing existe
+        const reservations = await apiFetch("/reservations/ongoing");
+        const tbody = document.getElementById("reservations-body");
+        tbody.innerHTML = "";
+        (reservations || []).forEach((r) => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>${r.catwayNumber}</td>
+            <td>${r.clientName}</td>
+            <td>${r.boatName}</td>
+            <td>${new Date(r.startDate).toLocaleDateString("fr-FR")}</td>
+            <td>${new Date(r.endDate).toLocaleDateString("fr-FR")}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+      }
+    </script>
+  </head>
+  <body onload="initDashboard()">
+    <header>
+      <h1>Tableau de bord - Port Russell</h1>
+    </header>
+    <main>
+      <nav>
+        <a href="/dashboard.html">Tableau de bord</a>
+        <a href="/catways.html">Catways</a>
+        <a href="/reservations.html">Réservations</a>
+        <a href="/users.html">Utilisateurs</a>
+        <a href="/docs">Documentation API</a>
+        <a href="#" onclick="logout()">Se déconnecter</a>
+      </nav>
+
+      <div class="card">
+        <h2>Informations utilisateur</h2>
+        <p>
+          <strong>Utilisateur connecté :</strong>
+          <span id="user-info"></span>
+        </p>
+        <p><strong>Date du jour :</strong> <span id="today"></span></p>
+      </div>
+
+      <div class="card">
+        <h2>Réservations en cours</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Catway</th>
+              <th>Client</th>
+              <th>Bateau</th>
+              <th>Début</th>
+              <th>Fin</th>
+            </tr>
+          </thead>
+          <tbody id="reservations-body"></tbody>
+        </table>
+      </div>
+    </main>
+  </body>
+</html>

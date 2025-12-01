@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Documentation API - Port Russell</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header>
+      <h1>Documentation de l'API - Port de Plaisance Russell</h1>
+    </header>
+    <main>
+      <nav>
+        <a href="/dashboard.html">Tableau de bord</a>
+        <a href="/catways.html">Catways</a>
+        <a href="/reservations.html">Réservations</a>
+        <a href="/users.html">Utilisateurs</a>
+        <a href="/">Accueil</a>
+      </nav>
+
+      <div class="card">
+        <h2>Authentification</h2>
+        <ul>
+          <li><strong>POST /login</strong> – Connexion, retourne un JWT</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h2>Catways</h2>
+        <ul>
+          <li><strong>GET /catways</strong> – Liste tous les catways</li>
+          <li><strong>GET /catways/:id</strong> – Détails d'un catway</li>
+          <li><strong>POST /catways</strong> – Créer un catway</li>
+          <li><strong>PUT /catways/:id</strong> – Modifier l'état d'un catway</li>
+          <li><strong>DELETE /catways/:id</strong> – Supprimer un catway</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h2>Réservations</h2>
+        <ul>
+          <li><strong>GET /catways/:id/reservations</strong> – Réservations d'un catway</li>
+          <li><strong>GET /catways/:id/reservations/:idReservation</strong> – Détails</li>
+          <li><strong>POST /catways/:id/reservations</strong> – Créer</li>
+          <li><strong>PUT /catways/:id/reservations/:idReservation</strong> – Modifier</li>
+          <li><strong>DELETE /catways/:id/reservations/:idReservation</strong> – Supprimer</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h2>Utilisateurs</h2>
+        <ul>
+          <li><strong>GET /users</strong> – Liste des utilisateurs</li>
+          <li><strong>GET /users/:email</strong> – Détails d'un utilisateur</li>
+          <li><strong>POST /users</strong> – Créer un utilisateur</li>
+          <li><strong>PUT /users/:email</strong> – Modifier un utilisateur</li>
+          <li><strong>DELETE /users/:email</strong> – Supprimer un utilisateur</li>
+        </ul>
+      </div>
+    </main>
+  </body>
+</html>

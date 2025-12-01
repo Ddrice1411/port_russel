@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Réservations - Port Russell</title>
+    <link rel="stylesheet" href="styles.css" />
+    <script defer src="main.js"></script>
+    <script>
+      async function loadCatwaysIntoSelect() {
+        const catways = await apiFetch("/catways");
+        const select = document.getElementById("catwaySelect");
+        select.innerHTML = "";
+        (catways || []).forEach((c) => {
+          const opt = document.createElement("option");
+          opt.value = c.catwayNumber;
+          opt.textContent = c.catwayNumber + " (" + c.catwayType + ")";
+          select.appendChild(opt);
+        });
+      }
+
+      async function loadReservationsForSelected() {
+        const catwayNumber = document.getElementById("catwaySelect").value;
+        if (!catwayNumber) return;
+        const resv = await apiFetch("/catways/" + catwayNumber + "/reservations");
+        const tbody = document.getElementById("reservations-body");
+        tbody.innerHTML = "";
+        (resv || []).forEach((r) => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>${r.catwayNumber}</td>
+            <td>${r.clientName}</td>
+            <td>${r.boatName}</td>
+            <td>${new Date(r.startDate).toLocaleDateString("fr-FR")}</td>
+            <td>${new Date(r.endDate).toLocaleDateString("fr-FR")}</td>
+            <td>
+              <button onclick="editReservation('${r._id}', ${r.catwayNumber})">Modifier</button>
+              <button onclick="deleteReservation('${r._id}', ${r.catwayNumber})">Supprimer</button>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+      }
+
+      async function createReservation(e) {
+        e.preventDefault();
+        const catwayNumber = document.getElementById("catwaySelect").value;
+        const clientName = document.getElementById("clientName").value;
+        const boatName = document.getElementById("boatName").value;
+        const startDate = document.getElementById("startDate").value;
+        const endDate = document.getElementById("endDate").value;
+
+        await apiFetch("/catways/" + catwayNumber + "/reservations", {
+          method: "POST",
+          body: JSON.stringify({ clientName, boatName, startDate, endDate })
+        });
+
+        e.target.reset();
+        loadReservationsForSelected();
+      }
+
+      function editReservation(id, catwayNumber) {
+        const newClient = prompt(
+          "Nouveau nom de client (laisser vide pour ne pas changer)"
+        );
+        const newBoat = prompt(
+          "Nouveau nom de bateau (laisser vide pour ne pas changer)"
+        );
+        const updates = {};
+        if (newClient) updates.clientName = newClient;
+        if (newBoat) updates.boatName = newBoat;
+        if (!Object.keys(updates).length) return;
+
+        apiFetch("/catways/" + catwayNumber + "/reservations/" + id, {
+          method: "PUT",
+          body: JSON.stringify(updates)
+        }).then(loadReservationsForSelected);
+      }
+
+      function deleteReservation(id, catwayNumber) {
+        if (!confirm("Supprimer cette réservation ?")) return;
+        apiFetch("/catways/" + catwayNumber + "/reservations/" + id, {
+          method: "DELETE"
+        }).then(loadReservationsForSelected);
+      }
+
+      async function initReservations() {
+        requireAuth();
+        await loadCatwaysIntoSelect();
+        loadReservationsForSelected();
+      }
+    </script>
+  </head>
+  <body onload="initReservations()">
+    <header>
+      <h1>Gestion des réservations</h1>
+    </header>
+    <main>
+      <nav>
+        <a href="/dashboard.html">Tableau de bord</a>
+        <a href="/catways.html">Catways</a>
+        <a href="/reservations.html">Réservations</a>
+        <a href="/users.html">Utilisateurs</a>
+        <a href="/docs">Documentation API</a>
+        <a href="#" onclick="logout()">Se déconnecter</a>
+      </nav>
+
+      <div class="card">
+        <h2>Créer une réservation</h2>
+        <form onsubmit="createReservation(event)">
+          <div>
+            <label>Catway</label><br />
+            <select id="catwaySelect" onchange="loadReservationsForSelected()"></select>
+          </div>
+          <div>
+            <label>Client</label><br />
+            <input type="text" id="clientName" required />
+          </div>
+          <div>
+            <label>Bateau</label><br />
+            <input type="text" id="boatName" required />
+          </div>
+          <div>
+            <label>Début</label><br />
+            <input type="date" id="startDate" required />
+          </div>
+          <div>
+            <label>Fin</label><br />
+            <input type="date" id="endDate" required />
+          </div>
+          <button type="submit">Créer</button>
+        </form>
+      </div>
+
+      <div class="card">
+        <h2>Réservations pour ce catway</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Catway</th>
+              <th>Client</th>
+              <th>Bateau</th>
+              <th>Début</th>
+              <th>Fin</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="reservations-body"></tbody>
+        </table>
+      </div>
+    </main>
+  </body>
+</html>

@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Utilisateurs - Port Russell</title>
+    <link rel="stylesheet" href="styles.css" />
+    <script defer src="main.js"></script>
+    <script>
+      async function loadUsers() {
+        const users = await apiFetch("/users");
+        const tbody = document.getElementById("users-body");
+        tbody.innerHTML = "";
+        (users || []).forEach((u) => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>${u.username}</td>
+            <td>${u.email}</td>
+            <td>
+              <button onclick="editUser('${u.email}', '${(u.username || "")
+                .replace(/'/g, "\\'")
+              }')">Modifier</button>
+              <button onclick="deleteUser('${u.email}')">Supprimer</button>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+      }
+
+      async function createUser(e) {
+        e.preventDefault();
+        const username = document.getElementById("username").value;
+        const email = document.getElementById("userEmail").value;
+        const password = document.getElementById("userPassword").value;
+
+        await apiFetch("/users", {
+          method: "POST",
+          body: JSON.stringify({ username, email, password })
+        });
+
+        e.target.reset();
+        loadUsers();
+      }
+
+      function editUser(email, username) {
+        const newUsername = prompt("Nouveau nom d'utilisateur", username);
+        if (!newUsername) return;
+        apiFetch("/users/" + email, {
+          method: "PUT",
+          body: JSON.stringify({ username: newUsername })
+        }).then(loadUsers);
+      }
+
+      function deleteUser(email) {
+        if (!confirm("Supprimer l'utilisateur " + email + " ?")) return;
+        apiFetch("/users/" + email, {
+          method: "DELETE"
+        }).then(loadUsers);
+      }
+
+      function initUsers() {
+        requireAuth();
+        loadUsers();
+      }
+    </script>
+  </head>
+  <body onload="initUsers()">
+    <header>
+      <h1>Gestion des utilisateurs</h1>
+    </header>
+    <main>
+      <nav>
+        <a href="/dashboard.html">Tableau de bord</a>
+        <a href="/catways.html">Catways</a>
+        <a href="/reservations.html">Réservations</a>
+        <a href="/users.html">Utilisateurs</a>
+        <a href="/docs">Documentation API</a>
+        <a href="#" onclick="logout()">Se déconnecter</a>
+      </nav>
+
+      <div class="card">
+        <h2>Créer un utilisateur</h2>
+        <form onsubmit="createUser(event)">
+          <div>
+            <label>Nom d'utilisateur</label><br />
+            <input type="text" id="username" required />
+          </div>
+          <div>
+            <label>Email</label><br />
+            <input type="email" id="userEmail" required />
+          </div>
+          <div>
+            <label>Mot de passe</label><br />
+            <input type="password" id="userPassword" required minlength="6" />
+          </div>
+          <button type="submit">Créer</button>
+        </form>
+      </div>
+
+      <div class="card">
+        <h2>Liste des utilisateurs</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Nom d'utilisateur</th>
+              <th>Email</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="users-body"></tbody>
+        </table>
+      </div>
+    </main>
+  </body>
+</html>

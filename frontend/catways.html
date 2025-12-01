@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Catways - Port Russell</title>
+    <link rel="stylesheet" href="styles.css" />
+    <script defer src="main.js"></script>
+    <script>
+      async function loadCatways() {
+        const catways = await apiFetch("/catways");
+        const tbody = document.getElementById("catways-body");
+        tbody.innerHTML = "";
+        (catways || []).forEach((c) => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>${c.catwayNumber}</td>
+            <td>${c.catwayType}</td>
+            <td>${c.catwayState}</td>
+            <td>
+              <button onclick="editCatway(${c.catwayNumber}, '${(c.catwayState || "")
+                .replace(/'/g, "\\'")
+              }')">Modifier</button>
+              <button onclick="deleteCatway(${c.catwayNumber})">Supprimer</button>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+      }
+
+      async function createCatway(e) {
+        e.preventDefault();
+        const catwayNumber = Number(document.getElementById("catwayNumber").value);
+        const catwayType = document.getElementById("catwayType").value;
+        const catwayState = document.getElementById("catwayState").value;
+
+        await apiFetch("/catways", {
+          method: "POST",
+          body: JSON.stringify({ catwayNumber, catwayType, catwayState })
+        });
+
+        e.target.reset();
+        loadCatways();
+      }
+
+      function editCatway(number, currentState) {
+        const newState = prompt(
+          "Nouvel état pour le catway " + number,
+          currentState
+        );
+        if (!newState) return;
+        apiFetch("/catways/" + number, {
+          method: "PUT",
+          body: JSON.stringify({ catwayState: newState })
+        }).then(loadCatways);
+      }
+
+      function deleteCatway(number) {
+        if (!confirm("Supprimer le catway " + number + " ?")) return;
+        apiFetch("/catways/" + number, {
+          method: "DELETE"
+        }).then(loadCatways);
+      }
+
+      function initCatways() {
+        requireAuth();
+        loadCatways();
+      }
+    </script>
+  </head>
+  <body onload="initCatways()">
+    <header>
+      <h1>Gestion des catways</h1>
+    </header>
+    <main>
+      <nav>
+        <a href="/dashboard.html">Tableau de bord</a>
+        <a href="/catways.html">Catways</a>
+        <a href="/reservations.html">Réservations</a>
+        <a href="/users.html">Utilisateurs</a>
+        <a href="/docs">Documentation API</a>
+        <a href="#" onclick="logout()">Se déconnecter</a>
+      </nav>
+
+      <div class="card">
+        <h2>Créer un catway</h2>
+        <form onsubmit="createCatway(event)">
+          <div>
+            <label>Numéro</label><br />
+            <input type="number" id="catwayNumber" required />
+          </div>
+          <div>
+            <label>Type</label><br />
+            <select id="catwayType">
+              <option value="short">Short</option>
+              <option value="long">Long</option>
+            </select>
+          </div>
+          <div>
+            <label>État</label><br />
+            <input type="text" id="catwayState" required />
+          </div>
+          <button type="submit">Créer</button>
+        </form>
+      </div>
+
+      <div class="card">
+        <h2>Liste des catways</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Numéro</th>
+              <th>Type</th>
+              <th>État</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="catways-body"></tbody>
+        </table>
+      </div>
+    </main>
+  </body>
+</html>

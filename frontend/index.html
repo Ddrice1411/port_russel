@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Port de Plaisance Russell - Accueil</title>
+    <link rel="stylesheet" href="styles.css" />
+    <script defer src="main.js"></script>
+    <script>
+      async function handleLogin(e) {
+        e.preventDefault();
+        const email = document.getElementById("email").value;
+        const password = document.getElementById("password").value;
+
+        try {
+          const res = await fetch("/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, password })
+          });
+
+          if (!res.ok) {
+            alert("Identifiants invalides");
+            return;
+          }
+
+          const data = await res.json();
+          saveToken(data.token, data.user);
+          window.location.href = "/dashboard.html";
+        } catch (err) {
+          console.error(err);
+          alert("Erreur de connexion au serveur");
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <header>
+      <h1>Port de Plaisance de Russell</h1>
+    </header>
+    <main>
+      <div class="card">
+        <h2>Application de gestion des catways & réservations</h2>
+        <p>
+          Cette application permet à la capitainerie de gérer les catways, les
+          réservations et les utilisateurs via une API privée et un tableau de
+          bord simple.
+        </p>
+      </div>
+
+      <div class="card">
+        <h2>Connexion</h2>
+        <form onsubmit="handleLogin(event)">
+          <div>
+            <label>Email</label><br />
+            <input type="email" id="email" required />
+          </div>
+          <div>
+            <label>Mot de passe</label><br />
+            <input type="password" id="password" required />
+          </div>
+          <button type="submit">Se connecter</button>
+        </form>
+      </div>
+
+      <div class="card">
+        <h2>Documentation de l'API</h2>
+        <p>
+          Retrouvez la liste des routes et des exemples d'utilisation de l'API
+          dans la documentation.
+        </p>
+        <a href="/docs">Voir la documentation de l'API</a>
+      </div>
+    </main>
+  </body>
+</html>
